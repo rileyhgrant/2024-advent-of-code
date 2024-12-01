@@ -1,7 +1,7 @@
 use std::fs;
 
 fn read_input() -> (Vec<i32>, Vec<i32>) {
-    let contents = fs::read_to_string("input/day1.txt").expect("Should have been able to read the file");
+    let contents = fs::read_to_string("input/day01.txt").expect("Should have been able to read the file");
 
     let mut left_numbers = Vec::new();
     let mut right_numbers = Vec::new();
