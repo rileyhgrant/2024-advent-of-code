@@ -15,6 +15,7 @@ fn main() {
         "1" => {
             println!("\n=== Day 1 ===");
             day1::part_1();
+            day1::part_2();
         }
         _ => println!("day {} not implemented yet!", config.day),
     }
