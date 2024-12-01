@@ -9,5 +9,5 @@ pub fn read_input(filepath: String) -> Vec<String> {
 
 #[allow(dead_code)]
 pub fn print_output(part: &str, output: String) {
-    println!("helllooooo {} {}", part, output)
+    println!(" -- Part {}: {}", part, output)
 }

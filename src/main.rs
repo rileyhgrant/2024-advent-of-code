@@ -15,7 +15,7 @@ fn main() {
 
     match config.day.as_ref() {
         "1" => {
-            println!("\n=== Day 1 ===");
+            println!("\n=== Day 01 ===");
             lib::print_output("1", day1::part_1("day01.txt"));
             lib::print_output("2", day1::part_2("day01.txt"));
         }
