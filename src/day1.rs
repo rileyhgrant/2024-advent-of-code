@@ -1,12 +1,13 @@
-use std::fs;
+#[path = "./lib.rs"]
+mod lib;
 
-fn read_input() -> (Vec<i32>, Vec<i32>) {
-    let contents = fs::read_to_string("input/day01.txt").expect("Should have been able to read the file");
+fn shape_input(filepath: &str) -> (Vec<i32>, Vec<i32>) {
+    let contents = lib::read_input(format!("input/{}", filepath));
 
     let mut left_numbers = Vec::new();
     let mut right_numbers = Vec::new();
 
-    for line in contents.lines() {
+    for line in contents.iter() {
         let mut numbers = line.split_whitespace();
 
         if let Some(left) = numbers.next() {
@@ -24,8 +25,10 @@ fn read_input() -> (Vec<i32>, Vec<i32>) {
     return (left_numbers, right_numbers)
 }
 
-pub fn part_1() {
-    let (left_numbers, right_numbers) = read_input();
+
+
+pub fn part_1(path: &str) -> String {
+    let (left_numbers, right_numbers) = shape_input(path);
 
     let mut sum = 0;
     for (i, left_value) in left_numbers.iter().enumerate() {
@@ -34,11 +37,11 @@ pub fn part_1() {
         sum = sum + difference;
     }
 
-    println!("Part 1: {}", sum)
+    return sum.to_string()
 }
 
-pub fn part_2() {
-    let (left_numbers, right_numbers) = read_input();
+pub fn part_2(path: &str) -> String {
+    let (left_numbers, right_numbers) = shape_input(path);
 
     let mut sum = 0;
 
@@ -52,7 +55,32 @@ pub fn part_2() {
         sum = sum + left_value * right_count;
     }
 
-    println!("Part 2: {}", sum)
-
+    return sum.to_string()
 }
 
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_day_1_part_1() {
+
+        let test_result = part_1("day01_test.txt");
+        assert_eq!(test_result, "11");
+
+        let full_result = part_1("day01.txt");
+        assert_eq!(full_result, "1834060");
+    }
+
+    #[test]
+    fn test_day_1_part_2() {
+
+        let test_result = part_2("day01_test.txt");
+        assert_eq!(test_result, "31");
+
+        let full_result = part_2("day01.txt");
+        assert_eq!(full_result, "21607792");
+    }
+}

@@ -1,5 +1,7 @@
 use std::env;
 
+#[path = "./lib.rs"]
+mod lib;
 mod day1;
 
 fn main() {
@@ -14,8 +16,8 @@ fn main() {
     match config.day.as_ref() {
         "1" => {
             println!("\n=== Day 1 ===");
-            day1::part_1();
-            day1::part_2();
+            lib::print_output("1", day1::part_1("day01.txt"));
+            lib::print_output("2", day1::part_2("day01.txt"));
         }
         _ => println!("day {} not implemented yet!", config.day),
     }
