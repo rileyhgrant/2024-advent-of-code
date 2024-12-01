@@ -1,5 +1,7 @@
 use std::env;
 
+mod day1;
+
 fn main() {
     println!("\n===================");
     println!("\nAdvent of Code 2024");
@@ -10,6 +12,10 @@ fn main() {
     println!("\nRunning day {}", config.day);
 
     match config.day.as_ref() {
+        "1" => {
+            println!("\n=== Day 1 ===");
+            day1::part_1();
+        }
         _ => println!("day {} not implemented yet!", config.day),
     }
 

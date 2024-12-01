@@ -23,3 +23,8 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+# Don't include puzzle inputs in Git Repo
+# per https://adventofcode.com/2024/about
+/input
+
