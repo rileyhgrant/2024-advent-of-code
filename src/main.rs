@@ -23,6 +23,7 @@ fn main() {
         "2" => {
             println!("\n=== Day 02 ===");
             lib::print_output("1", day2::part_1("day02.txt"));
+            lib::print_output("1", day2::part_2("day02.txt"));
         }
         _ => println!("day {} not implemented yet!", config.day),
     }
