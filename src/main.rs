@@ -6,26 +6,33 @@ mod day1;
 mod day2;
 
 fn main() {
-    println!("\n===================");
-    println!("\nAdvent of Code 2024");
+    println!("\n\n===================");
+    println!("Advent of Code 2024");
 
     let args: Vec<String> = env::args().collect();
     let config = parse_config(&args);
 
-    println!("\nRunning day {}", config.day);
+    let current_day = 2;
+    
+    let days: Vec<String> = if config.day.to_lowercase() == "all" {
+        (1..(current_day + 1)).map(|day| day.to_string()).collect()
+    } else {
+        vec![config.day]
+    };
 
-    match config.day.as_ref() {
-        "1" => {
-            println!("\n=== Day 01 ===");
-            lib::print_output("1", day1::part_1("day01.txt"));
-            lib::print_output("2", day1::part_2("day01.txt"));
+    for day in days {
+        println!("\n=== Day {:02}===", day);
+        match day.as_str() {
+            "1" => {
+                lib::print_output("1", day1::part_1("day01.txt"));
+                lib::print_output("2", day1::part_2("day01.txt"));
+            }
+            "2" => {
+                lib::print_output("1", day2::part_1("day02.txt"));
+                lib::print_output("1", day2::part_2("day02.txt"));
+            }
+            _ => println!(" -- not implemented yet"),
         }
-        "2" => {
-            println!("\n=== Day 02 ===");
-            lib::print_output("1", day2::part_1("day02.txt"));
-            lib::print_output("1", day2::part_2("day02.txt"));
-        }
-        _ => println!("day {} not implemented yet!", config.day),
     }
 
     struct Config {
