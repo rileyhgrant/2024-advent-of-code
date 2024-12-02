@@ -3,6 +3,7 @@ use std::env;
 #[path = "./lib.rs"]
 mod lib;
 mod day1;
+mod day2;
 
 fn main() {
     println!("\n===================");
@@ -18,6 +19,10 @@ fn main() {
             println!("\n=== Day 01 ===");
             lib::print_output("1", day1::part_1("day01.txt"));
             lib::print_output("2", day1::part_2("day01.txt"));
+        }
+        "2" => {
+            println!("\n=== Day 02 ===");
+            lib::print_output("1", day2::part_1("day02.txt"));
         }
         _ => println!("day {} not implemented yet!", config.day),
     }
