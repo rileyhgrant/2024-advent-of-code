@@ -29,7 +29,7 @@ fn main() {
             }
             "2" => {
                 lib::print_output("1", day2::part_1("day02.txt"));
-                lib::print_output("1", day2::part_2("day02.txt"));
+                lib::print_output("2", day2::part_2("day02.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }

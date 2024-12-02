@@ -14,7 +14,7 @@ Advent of Code 2024
 
 === Day 2  ===
  -- Part 1: 591
- -- Part 1: 621
+ -- Part 2: 621
 ```
 
 Alternately, run with `all` to see every solution
@@ -34,7 +34,7 @@ Advent of Code 2024
 
 === Day 2 ===
  -- Part 1: 591
- -- Part 1: 621
+ -- Part 2: 621
 
 === Day 3 ===
  -- not implemented yet
