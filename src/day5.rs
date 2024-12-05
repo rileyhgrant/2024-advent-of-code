@@ -88,6 +88,57 @@ pub fn part_1(path: &str) -> String {
 }
 
 
+pub fn part_2(path: &str) -> String {
+    let (rules, updates) = shape_input(path);
+
+    updates.iter()
+        .filter(|line| {
+            let numbers: Vec<u32> = line.split(',')
+                .map(|n| n.trim().parse().unwrap())
+                .collect();
+
+            for (i, &num) in numbers.iter().enumerate() {
+                let previous = &numbers[..i];
+    
+                if rules.iter().any(|rule| !rule.check_passes_rules(num, previous)) {
+                    return true;
+                }
+            }
+            false 
+        })
+        .map(|line| {
+            let numbers: Vec<u32> = line.split(',')
+                .map(|n| n.trim().parse().unwrap())
+                .collect();
+
+            let mut current = numbers;
+            let sorted = loop {
+                let mut next = Vec::new();
+                let mut changed = false;
+
+                for (i, &num) in current.iter().enumerate() {
+                    let previous = &current[..i];
+                    if rules.iter().any(|rule| !rule.check_passes_rules(num, previous)) {
+                        next.insert(0, num);
+                        changed = true;
+                    } else {
+                        next.push(num);
+                    }
+                }
+                if !changed {
+                    break next;
+                }
+                current = next;
+            };
+
+            let middle = sorted.len() / 2;
+            sorted[middle]
+        })
+        .sum::<u32>()
+        .to_string()
+}
+
+
 
 #[cfg(test)]
 mod tests {
@@ -131,5 +182,16 @@ mod tests {
 
         let test_result = part_1("day05.txt");
         assert_eq!(test_result, "4905");
+    }
+
+
+
+    #[test]
+    fn test_day_5_part_2() {
+        let test_result = part_2("day05_test.txt");
+        assert_eq!(test_result, "123");
+
+        let test_result = part_2("day05.txt");
+        assert_eq!(test_result, "6204");
     }
 }

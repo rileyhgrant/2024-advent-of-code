@@ -44,6 +44,7 @@ fn main() {
             }
             "5" => {
                 lib::print_output("1", day5::part_1("day05.txt"));
+                lib::print_output("2", day5::part_2("day05.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }
