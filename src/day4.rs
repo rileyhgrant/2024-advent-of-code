@@ -3,30 +3,6 @@ mod lib;
 
 
 
-fn shape_input(filepath: &str) -> Vec<Vec<char>> {
-    let contents = lib::read_input(format!("input/{}", filepath));
-
-    let line_length = contents.iter().next().unwrap().len();
-    let padding = 3;
-
-    let padding_row = vec![vec!['.'; line_length + padding * 2]; padding];
-    let padding_cols = vec!['.'; padding];
-
-    let mut grid = padding_row.clone(); 
-    contents.iter()
-        .for_each(|line| {
-            let mut padded_line = padding_cols.clone() ;
-            padded_line.extend(line.chars());
-            padded_line.extend(padding_cols.clone());
-            grid.push(padded_line);
-        });
-    grid.extend(padding_row);
-
-    grid
-}
-
-
-
 fn sum_xmasses(grid: &Vec<Vec<char>>, row: usize, col: usize) -> i32 {
     let check = [-1, 0, 1];
     let chars = ['M', 'A', 'S'];
@@ -54,7 +30,7 @@ fn sum_xmasses(grid: &Vec<Vec<char>>, row: usize, col: usize) -> i32 {
 
 
 pub fn part_1(path: &str) -> String {
-    let grid = shape_input(path);
+    let grid = lib::create_padded_grid(path, '.', 3);
 
     let mut sum = 0;
     grid.iter().enumerate()
@@ -113,7 +89,7 @@ fn sum_x_masses(grid: &Vec<Vec<char>>, row: usize, col: usize) -> i32 {
 
 
 pub fn part_2(path: &str) -> String {
-    let grid = shape_input(path);
+    let grid = lib::create_padded_grid(path, '.', 3);
 
     let mut sum = 0;
     grid.iter().enumerate()
