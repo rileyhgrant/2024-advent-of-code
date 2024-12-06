@@ -1,4 +1,5 @@
 use std::fs;
+use std::time::Instant;
 
 
 
@@ -22,8 +23,12 @@ pub fn string_to_vec_string(input: String) -> Vec<String> {
 
 
 #[allow(dead_code)]
-pub fn print_output(part: &str, output: String) {
-    println!(" -- Part {}: {}", part, output)
+pub fn print_output<F>(part: &str, func: F) 
+where F: FnOnce() -> String {
+    let start = Instant::now();
+    let output = func();
+    let duration = start.elapsed();
+    println!(" -- Part {}: {} (took: {:.3}s)", part, output, duration.as_secs_f64())
 }
 
 
