@@ -8,6 +8,7 @@ mod day03;
 mod day04;
 mod day05;
 mod day06;
+mod day07;
 
 fn main() {
     println!("\n\n===================");
@@ -16,7 +17,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let config = parse_config(&args);
 
-    let current_day = 6;
+    let current_day = 7;
     
     let days: Vec<String> = if config.day.to_lowercase() == "all" {
         (1..(current_day + 1)).map(|day| day.to_string()).collect()
@@ -50,6 +51,9 @@ fn main() {
             "6" => {
                 lib::print_output("1", || day06::part_1("day06.txt"));
                 lib::print_output("2", || day06::part_2("day06.txt"));
+            }
+            "7" => {
+                lib::print_output("1", || day07::part_1("day07.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }
