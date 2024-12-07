@@ -1,8 +1,6 @@
 #[path = "./lib.rs"]
 mod lib;
 
-
-
 fn sum_xmasses(grid: &Vec<Vec<char>>, row: usize, col: usize) -> i32 {
     let check = [-1, 0, 1];
     let chars = ['M', 'A', 'S'];
@@ -20,42 +18,31 @@ fn sum_xmasses(grid: &Vec<Vec<char>>, row: usize, col: usize) -> i32 {
                 if ch == 'S' {
                     sum += 1;
                 }
-            };
+            }
         }
     }
 
     sum
 }
 
-
-
 pub fn part_1(path: &str) -> String {
     let grid = lib::create_padded_grid(path, '.', 3);
 
     let mut sum = 0;
-    grid.iter().enumerate()
-        .for_each(|(i, row)| {
-            row.iter().enumerate()
-                .for_each(|(j, _cell)| {
-                    if grid[i][j] == 'X' {
-                        let xmasses = sum_xmasses(&grid, i, j);
-                        sum += xmasses
-                    }
-                })
-        });
+    grid.iter().enumerate().for_each(|(i, row)| {
+        row.iter().enumerate().for_each(|(j, _cell)| {
+            if grid[i][j] == 'X' {
+                let xmasses = sum_xmasses(&grid, i, j);
+                sum += xmasses
+            }
+        })
+    });
 
     sum.to_string()
 }
 
-
-
 fn sum_x_masses(grid: &Vec<Vec<char>>, row: usize, col: usize) -> i32 {
-    let check = [
-        [
-            [(-1, -1), (1, 1)],
-            [(-1, 1), (1, -1)],
-        ],
-    ];
+    let check = [[[(-1, -1), (1, 1)], [(-1, 1), (1, -1)]]];
 
     // TODO: All these mut counters is pretty un idiomatic Rust
     //   clean this up later in a more functional way, if desired
@@ -86,29 +73,21 @@ fn sum_x_masses(grid: &Vec<Vec<char>>, row: usize, col: usize) -> i32 {
     sum
 }
 
-
-
 pub fn part_2(path: &str) -> String {
     let grid = lib::create_padded_grid(path, '.', 3);
 
     let mut sum = 0;
-    grid.iter().enumerate()
-        .for_each(|(i, row)| {
-            row.iter().enumerate()
-                .for_each(|(j, _cell)| {
-                    if grid[i][j] == 'A' {
-                        let x_masses = sum_x_masses(&grid, i, j);
-                        sum += x_masses
-                    }
-                })
-        });
+    grid.iter().enumerate().for_each(|(i, row)| {
+        row.iter().enumerate().for_each(|(j, _cell)| {
+            if grid[i][j] == 'A' {
+                let x_masses = sum_x_masses(&grid, i, j);
+                sum += x_masses
+            }
+        })
+    });
 
     sum.to_string()
 }
-
-
-
-
 
 #[cfg(test)]
 mod tests {
@@ -116,7 +95,6 @@ mod tests {
 
     #[test]
     fn test_day_4_part_1() {
-
         let test_result = part_1("day04_test.txt");
         assert_eq!(test_result, "18");
 
@@ -124,15 +102,12 @@ mod tests {
         assert_eq!(test_result, "2567");
     }
 
-
     #[test]
     fn test_day_4_part_2() {
-
         let test_result = part_2("day04_test.txt");
         assert_eq!(test_result, "9");
 
         let test_result = part_2("day04.txt");
         assert_eq!(test_result, "2029");
     }
-
 }

@@ -3,14 +3,11 @@ mod lib;
 
 use std::fs;
 
-
-
 #[derive(Debug)]
 struct Rule {
     pre: u32,
     post: u32,
 }
-
 
 impl Rule {
     fn new(pattern: &str) -> Self {
@@ -27,9 +24,9 @@ impl Rule {
 
     fn as_post_any_rules_broken(&self, post: u32, pre_candidates: &[u32]) -> bool {
         if post == self.pre {
-            return pre_candidates.contains(&self.post)
+            return pre_candidates.contains(&self.post);
         }
-        false 
+        false
     }
 
     fn check_passes_rules(&self, post: u32, pre_candidates: &[u32]) -> bool {
@@ -38,48 +35,45 @@ impl Rule {
         }
         true
     }
-
 }
 
-
-
 fn shape_input(filepath: &str) -> (Vec<Rule>, Vec<String>) {
-    let contents = fs::read_to_string(format!("./input/{}", filepath)).expect("Should have been able to read the file");
-    let (rules_text, updates_text) = contents.split_once("\n\n").unwrap(); 
+    let contents = fs::read_to_string(format!("./input/{}", filepath))
+        .expect("Should have been able to read the file");
+    let (rules_text, updates_text) = contents.split_once("\n\n").unwrap();
     let rules_vec = lib::string_to_vec_string(rules_text.to_string());
     let updates_vec = lib::string_to_vec_string(updates_text.to_string());
 
-    let rules: Vec<Rule> = rules_vec.iter()
+    let rules: Vec<Rule> = rules_vec
+        .iter()
         .map(|rule_string| Rule::new(rule_string))
         .collect();
 
     (rules, updates_vec)
 }
 
-
-
 pub fn part_1(path: &str) -> String {
     let (rules, updates) = shape_input(path);
 
-    updates.iter()
+    updates
+        .iter()
         .filter(|line| {
-            let numbers: Vec<u32> = line.split(',')
-                .map(|n| n.trim().parse().unwrap())
-                .collect();
+            let numbers: Vec<u32> = line.split(',').map(|n| n.trim().parse().unwrap()).collect();
 
             for (i, &num) in numbers.iter().enumerate() {
                 let previous = &numbers[..i];
-    
-                if rules.iter().any(|rule| !rule.check_passes_rules(num, previous)) {
+
+                if rules
+                    .iter()
+                    .any(|rule| !rule.check_passes_rules(num, previous))
+                {
                     return false;
                 }
             }
-            true 
+            true
         })
         .map(|line| {
-            let numbers: Vec<u32> = line.split(',')
-                .map(|n| n.trim().parse().unwrap())
-                .collect();
+            let numbers: Vec<u32> = line.split(',').map(|n| n.trim().parse().unwrap()).collect();
             let middle = numbers.len() / 2;
             numbers[middle]
         })
@@ -87,29 +81,28 @@ pub fn part_1(path: &str) -> String {
         .to_string()
 }
 
-
 pub fn part_2(path: &str) -> String {
     let (rules, updates) = shape_input(path);
 
-    updates.iter()
+    updates
+        .iter()
         .filter(|line| {
-            let numbers: Vec<u32> = line.split(',')
-                .map(|n| n.trim().parse().unwrap())
-                .collect();
+            let numbers: Vec<u32> = line.split(',').map(|n| n.trim().parse().unwrap()).collect();
 
             for (i, &num) in numbers.iter().enumerate() {
                 let previous = &numbers[..i];
-    
-                if rules.iter().any(|rule| !rule.check_passes_rules(num, previous)) {
+
+                if rules
+                    .iter()
+                    .any(|rule| !rule.check_passes_rules(num, previous))
+                {
                     return true;
                 }
             }
-            false 
+            false
         })
         .map(|line| {
-            let numbers: Vec<u32> = line.split(',')
-                .map(|n| n.trim().parse().unwrap())
-                .collect();
+            let numbers: Vec<u32> = line.split(',').map(|n| n.trim().parse().unwrap()).collect();
 
             let mut current = numbers;
             let sorted = loop {
@@ -118,7 +111,10 @@ pub fn part_2(path: &str) -> String {
 
                 for (i, &num) in current.iter().enumerate() {
                     let previous = &current[..i];
-                    if rules.iter().any(|rule| !rule.check_passes_rules(num, previous)) {
+                    if rules
+                        .iter()
+                        .any(|rule| !rule.check_passes_rules(num, previous))
+                    {
                         next.insert(0, num);
                         changed = true;
                     } else {
@@ -138,8 +134,6 @@ pub fn part_2(path: &str) -> String {
         .to_string()
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -152,7 +146,7 @@ mod tests {
         assert_eq!(rule.contains(20), false);
     }
 
-    #[test] 
+    #[test]
     fn test_rules_as_post() {
         let rule = Rule::new("10|15");
         assert_eq!(rule.as_post_any_rules_broken(15, &[9, 10, 11]), false);
@@ -163,7 +157,7 @@ mod tests {
         assert_eq!(rule.as_post_any_rules_broken(14, &[9, 11, 12]), false);
     }
 
-    #[test] 
+    #[test]
     fn test_passes_rules() {
         let rule = Rule::new("10|15");
         assert_eq!(rule.check_passes_rules(15, &[9, 10, 11]), true);
@@ -174,7 +168,6 @@ mod tests {
         assert_eq!(rule.check_passes_rules(14, &[9, 11, 12]), true);
     }
 
-
     #[test]
     fn test_day_5_part_1() {
         let test_result = part_1("day05_test.txt");
@@ -183,8 +176,6 @@ mod tests {
         let test_result = part_1("day05.txt");
         assert_eq!(test_result, "4905");
     }
-
-
 
     #[test]
     fn test_day_5_part_2() {
