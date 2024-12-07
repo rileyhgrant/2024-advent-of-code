@@ -57,7 +57,7 @@ fn find_char(grid: &Vec<Vec<char>>, target: char) -> (usize, usize) {
     (0, 0)
 }
 
-pub fn part_1(path: &str) -> String {
+fn guard_walk(path: &str) -> (String, Vec<Vec<char>>) {
     let mut grid = lib::create_padded_grid(path, 'e', 1);
     let mut guard = Guard::new(find_char(&grid, '^'));
 
@@ -84,7 +84,11 @@ pub fn part_1(path: &str) -> String {
         }
     }
 
-    count.to_string()
+    (count.to_string(), grid)
+}
+
+pub fn part_1(path: &str) -> String {
+    guard_walk(path).0
 }
 
 fn has_infinite_loop(grid: &mut Vec<Vec<char>>) -> bool {
@@ -123,11 +127,15 @@ fn has_infinite_loop(grid: &mut Vec<Vec<char>>) -> bool {
 pub fn part_2(path: &str) -> String {
     let grid = lib::create_padded_grid(path, 'e', 1);
 
+    let guard_initial_position = find_char(&grid, '^');
+    let mut to_check_grid = guard_walk(path).1;
+    to_check_grid[guard_initial_position.0][guard_initial_position.1] = '^';
+
     let mut cycle_count = 0;
-    for (i, row) in grid.iter().enumerate() {
+    for (i, row) in to_check_grid.iter().enumerate() {
         for (j, _col) in row.iter().enumerate() {
-            if grid[i][j] == '.' {
-                let mut test_grid = grid.clone();
+            if to_check_grid[i][j] == 'X' {
+                let mut test_grid = to_check_grid.clone();
                 test_grid[i][j] = '#';
                 if has_infinite_loop(&mut test_grid) {
                     cycle_count += 1
