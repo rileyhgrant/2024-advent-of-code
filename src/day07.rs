@@ -28,10 +28,10 @@ fn can_create_solution_recursion(
     let partial: u64 = match op {
         Operator::Add => check_vec[0] + check_vec[1],
         Operator::Multiply => check_vec[0] * check_vec[1],
-        Operator::Concat => (check_vec[0].to_string() + &check_vec[1].to_string())
-            .parse::<u64>()
-            .ok()
-            .unwrap(),
+        Operator::Concat => {
+            let second_num_digits = ((check_vec[1] as f64).log10().floor() as u32) + 1;
+            check_vec[0] * (10 as u64).pow(second_num_digits) + check_vec[1]
+        }
     };
 
     if partial > target {
