@@ -13,14 +13,26 @@ fn parse_line(line: &str) -> (u64, Vec<u64>) {
     (test_value_int, number_vec)
 }
 
-fn check_equals(target: u64, op: char, check_vec: Vec<u64>) -> bool {
+#[derive(Clone)]
+pub enum Operator {
+    Add,
+    Multiply,
+    Concat,
+}
+
+fn can_create_solution_recursion(
+    target: u64,
+    op: Operator,
+    operators: Vec<Operator>,
+    check_vec: Vec<u64>,
+) -> bool {
     let partial: u64 = match op {
-        '+' => check_vec[0] + check_vec[1],
-        '*' => check_vec[0] * check_vec[1],
-        _ => {
-            println!("Something is horribly wrong");
-            0
-        }
+        Operator::Add => check_vec[0] + check_vec[1],
+        Operator::Multiply => check_vec[0] * check_vec[1],
+        Operator::Concat => (check_vec[0].to_string() + &check_vec[1].to_string())
+            .parse::<u64>()
+            .ok()
+            .unwrap(),
     };
 
     if partial > target {
@@ -28,35 +40,55 @@ fn check_equals(target: u64, op: char, check_vec: Vec<u64>) -> bool {
     } else if check_vec.len() == 2 {
         partial == target
     } else {
-        let operators = vec!['+', '*'];
         let mut recur_vec = vec![partial];
         recur_vec.extend(&check_vec[2..]);
 
-        let result = operators.iter().any(|&op| {
-            return check_equals(target, op, recur_vec.clone());
+        let result = operators.iter().any(|op| {
+            return can_create_solution_recursion(
+                target,
+                op.clone(),
+                operators.clone(),
+                recur_vec.clone(),
+            );
         });
         result
     }
 }
 
-pub fn part_1(path: &str) -> String {
+fn can_create_solution(target: u64, operators: Vec<Operator>, check_vec: Vec<u64>) -> bool {
+    operators.iter().any(|op| {
+        return can_create_solution_recursion(
+            target,
+            op.clone(),
+            operators.clone(),
+            check_vec.clone(),
+        );
+    })
+}
+
+pub fn solve_with_operators(path: &str, operators: Vec<Operator>) -> String {
     let contents = lib::read_input(format!("input/{}", path));
 
     let mut sum = 0;
     for line in contents.iter() {
         let (test_value, numbers) = parse_line(line);
-        let operators = vec!['+', '*'];
-
-        let result = operators.iter().any(|&op| {
-            return check_equals(test_value, op, numbers.clone());
-        });
-
-        if result == true {
-            sum += test_value;
+        if can_create_solution(test_value, operators.clone(), numbers.clone()) == true {
+            sum += test_value
         }
     }
 
     sum.to_string()
+}
+
+pub fn part_1(path: &str) -> String {
+    solve_with_operators(path, vec![Operator::Add, Operator::Multiply])
+}
+
+pub fn part_2(path: &str) -> String {
+    solve_with_operators(
+        path,
+        vec![Operator::Add, Operator::Multiply, Operator::Concat],
+    )
 }
 
 #[cfg(test)]
@@ -70,5 +102,14 @@ mod tests {
 
         let test_result = part_1("day07.txt");
         assert_eq!(test_result, "5540634308362");
+    }
+
+    #[test]
+    fn test_day_7_part_2() {
+        let test_result = part_2("day07_test.txt");
+        assert_eq!(test_result, "11387");
+
+        let test_result = part_2("day07.txt");
+        assert_eq!(test_result, "472290821152397");
     }
 }

@@ -1,7 +1,5 @@
 use std::env;
 
-#[path = "./lib.rs"]
-mod lib;
 mod day01;
 mod day02;
 mod day03;
@@ -9,6 +7,8 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
+#[path = "./lib.rs"]
+mod lib;
 
 fn main() {
     println!("\n\n===================");
@@ -18,7 +18,7 @@ fn main() {
     let config = parse_config(&args);
 
     let current_day = 7;
-    
+
     let days: Vec<String> = if config.day.to_lowercase() == "all" {
         (1..(current_day + 1)).map(|day| day.to_string()).collect()
     } else {
@@ -54,6 +54,7 @@ fn main() {
             }
             "7" => {
                 lib::print_output("1", || day07::part_1("day07.txt"));
+                lib::print_output("2", || day07::part_2("day07.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }
@@ -69,4 +70,3 @@ fn main() {
         Config { day }
     }
 }
-
