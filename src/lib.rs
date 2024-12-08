@@ -53,3 +53,8 @@ pub fn create_padded_grid(filepath: &str, pad_char: char, pad_amount: usize) -> 
 
     grid
 }
+
+#[allow(dead_code)]
+pub fn create_grid(filepath: &str) -> Vec<Vec<char>> {
+    create_padded_grid(filepath, '.', 0)
+}

@@ -1,5 +1,8 @@
 use std::env;
 
+#[path = "./lib.rs"]
+mod lib;
+
 mod day01;
 mod day02;
 mod day03;
@@ -7,8 +10,7 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
-#[path = "./lib.rs"]
-mod lib;
+mod day08;
 
 fn main() {
     println!("\n\n===================");
@@ -55,6 +57,9 @@ fn main() {
             "7" => {
                 lib::print_output("1", || day07::part_1("day07.txt"));
                 lib::print_output("2", || day07::part_2("day07.txt"));
+            }
+            "8" => {
+                lib::print_output("1", || day08::part_1("day08.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }
