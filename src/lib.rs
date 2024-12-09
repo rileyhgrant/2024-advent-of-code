@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::fs;
 use std::time::Instant;
 
@@ -57,4 +58,58 @@ pub fn create_padded_grid(filepath: &str, pad_char: char, pad_amount: usize) -> 
 #[allow(dead_code)]
 pub fn create_grid(filepath: &str) -> Vec<Vec<char>> {
     create_padded_grid(filepath, '.', 0)
+}
+
+fn print_star_pattern(width: usize) {
+    let star_size = width / 5;
+    if star_size == 0 {
+        return;
+    }
+    if star_size == 1 {
+        println!("{:>width$}★", "", width = width);
+        return;
+    }
+    for i in 0..star_size {
+        let line_width = 2 * i + 1;
+        let line = "★".repeat(line_width);
+        println!("{:>width$}{}", "", line, width = width - i);
+    }
+}
+
+#[allow(dead_code)]
+pub fn print_christmas_tree(height: usize) {
+    let mut rng = rand::thread_rng();
+    let ornaments = vec!['o', '●', '*', '✦', '◆', '❅'];
+
+    println!("");
+
+    print_star_pattern(height);
+
+    for i in 0..height {
+        let line_width = 2 * i + 1;
+        let num_ornaments = (line_width as f32 * 0.33).round() as usize;
+
+        let symbol = if i == 0 && height > 9 { '★' } else { '*' };
+
+        let mut line: Vec<char> = vec![symbol; line_width];
+
+        let mut ornaments_placed = 0;
+        while ornaments_placed < num_ornaments {
+            let pos = rng.gen_range(0..line_width);
+            if line[pos] == '*' {
+                let ornament_idx = rng.gen_range(0..ornaments.len());
+                line[pos] = ornaments[ornament_idx];
+                ornaments_placed += 1;
+            }
+        }
+
+        let line_str: String = line.into_iter().collect();
+        println!("{:>width$}{}", "", line_str, width = height - i);
+    }
+
+    for _ in 0..height / 5 {
+        println!("{:>width$}|", "", width = height);
+    }
+
+    println!("{:>width$}===", "", width = height - 1);
 }
