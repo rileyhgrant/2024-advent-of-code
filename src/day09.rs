@@ -110,14 +110,22 @@ pub fn part_2(path: &str) -> String {
     let mut transformed_input: Vec<i32> = Vec::new();
     let mut symbol_value = 0;
 
+    let mut symbol_posns: Vec<(i32, usize, usize)> = Vec::new();
+
+    let mut idx = 0;
     for (i, &num) in input.iter().enumerate() {
         let symbol = if i % 2 != 0 {
+            idx += num as usize;
             -1
         } else {
             let temp = generate_new_symbol(&symbols);
             symbols.push(temp);
             symbols_map.insert(temp, symbol_value);
             symbol_value += 1;
+
+            symbol_posns.push((temp, idx, idx + num as usize - 1));
+            idx += num as usize;
+
             temp
         };
 
@@ -134,9 +142,14 @@ pub fn part_2(path: &str) -> String {
     let mut blank_indices = find_indices(-1, &clone);
 
     for symbol in reversed_symbols.iter() {
-        let symbol_indices = find_indices(*symbol, &clone);
-        let symbol_start_idx = symbol_indices[0].0;
-        let symbol_end_idx = symbol_indices[0].1;
+        let symbol_indices = symbol_posns
+            .iter()
+            .find(|el| el.0 == *symbol)
+            .map(|el| (el.1, el.2))
+            .unwrap();
+
+        let symbol_start_idx = symbol_indices.0;
+        let symbol_end_idx = symbol_indices.1;
         let len_needed = symbol_end_idx - symbol_start_idx + 1;
         for i in 0..blank_indices.len() - 1 {
             let blank = &blank_indices[i];
@@ -150,7 +163,7 @@ pub fn part_2(path: &str) -> String {
 
             if len_available >= len_needed {
                 let mut blank_start = blank.0;
-                let mut mem_start = symbol_indices[0].0;
+                let mut mem_start = symbol_indices.0;
                 for _ in 0..len_needed {
                     clone.swap(blank_start, mem_start);
                     blank_start += 1;
