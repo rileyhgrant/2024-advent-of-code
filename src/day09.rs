@@ -131,14 +131,16 @@ pub fn part_2(path: &str) -> String {
     reversed_symbols.remove(0);
     reversed_symbols.reverse();
 
+    let mut blank_indices = find_indices(-1, &clone);
+
     for symbol in reversed_symbols.iter() {
         let symbol_indices = find_indices(*symbol, &clone);
         let symbol_start_idx = symbol_indices[0].0;
         let symbol_end_idx = symbol_indices[0].1;
         let len_needed = symbol_end_idx - symbol_start_idx + 1;
+        for i in 0..blank_indices.len() - 1 {
+            let blank = &blank_indices[i];
 
-        let blank_indices = find_indices(-1, &clone);
-        for blank in blank_indices {
             let len_available = blank.1 - blank.0 + 1;
             let comes_before = blank.0 < symbol_start_idx;
 
@@ -154,6 +156,16 @@ pub fn part_2(path: &str) -> String {
                     blank_start += 1;
                     mem_start += 1;
                 }
+
+                let new_blank_start = blank_start;
+                let new_blank_stop = blank.1;
+
+                if new_blank_start > new_blank_stop {
+                    blank_indices.remove(i);
+                } else {
+                    blank_indices[i] = (new_blank_start, new_blank_stop);
+                }
+                break;
             }
         }
     }
