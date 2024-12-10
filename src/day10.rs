@@ -1,9 +1,9 @@
 #[path = "./lib.rs"]
 mod lib;
 
-fn recur(symb: i32, pos: (usize, usize), grid: &Vec<Vec<char>>) -> i32 {
+fn recur(symb: i32, pos: (usize, usize), grid: &Vec<Vec<char>>, part_1: bool) -> i32 {
     let mut seen_nines: Vec<(usize, usize)> = Vec::new();
-    _recur(symb, pos, grid, &mut seen_nines)
+    _recur(symb, pos, grid, &mut seen_nines, part_1)
 }
 
 fn _recur(
@@ -11,6 +11,7 @@ fn _recur(
     pos: (usize, usize),
     grid: &Vec<Vec<char>>,
     seen_nines: &mut Vec<(usize, usize)>,
+    part_1: bool,
 ) -> i32 {
     let check_vec = vec![(0, -1), (-1, 0), (1, 0), (0, 1)];
 
@@ -28,7 +29,11 @@ fn _recur(
         } else {
             let num_to_check = symbol_to_check.to_digit(10).unwrap() as i32;
             if num_to_check == symb + 1 {
-                sum += _recur(num_to_check, (new_row, new_col), &grid, seen_nines);
+                if part_1 {
+                    sum += _recur(num_to_check, (new_row, new_col), &grid, seen_nines, part_1);
+                } else {
+                    sum += recur(num_to_check, (new_row, new_col), &grid, part_1);
+                }
             }
         }
     }
@@ -45,7 +50,30 @@ pub fn part_1(path: &str) -> String {
     for i in 0..size {
         for j in 0..size {
             if grid[i][j] == '0' {
-                let this_sum = recur(grid[i][j].to_digit(10).unwrap() as i32, (i, j), &grid);
+                let this_sum = recur(grid[i][j].to_digit(10).unwrap() as i32, (i, j), &grid, true);
+                sum += this_sum;
+            }
+        }
+    }
+
+    sum.to_string()
+}
+
+pub fn part_2(path: &str) -> String {
+    let grid = lib::create_padded_grid(path, '.', 1);
+
+    let size = grid.iter().count();
+
+    let mut sum = 0;
+    for i in 0..size {
+        for j in 0..size {
+            if grid[i][j] == '0' {
+                let this_sum = recur(
+                    grid[i][j].to_digit(10).unwrap() as i32,
+                    (i, j),
+                    &grid,
+                    false,
+                );
                 sum += this_sum;
             }
         }
@@ -65,5 +93,14 @@ mod tests {
 
         let test_result = part_1("day10.txt");
         assert_eq!(test_result, "459");
+    }
+
+    #[test]
+    fn test_day_10_part_2() {
+        let test_result = part_2("day10_test.txt");
+        assert_eq!(test_result, "81");
+
+        let test_result = part_2("day10.txt");
+        assert_eq!(test_result, "1034");
     }
 }
