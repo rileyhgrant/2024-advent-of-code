@@ -19,7 +19,7 @@ fn main() {
     println!("\n\n===================");
     println!("Advent of Code 2024");
 
-    let current_day = 10;
+    let current_day = 11;
 
     let args: Vec<String> = env::args().collect();
     let config = parse_config(&args);
@@ -79,6 +79,7 @@ fn main() {
             }
             "11" => {
                 lib::print_output("1", || day11::part_1("day11.txt"));
+                lib::print_output("2", || day11::part_2("day11.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }

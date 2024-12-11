@@ -1,6 +1,8 @@
 #[path = "./lib.rs"]
 mod lib;
 
+use std::collections::HashMap;
+
 fn blink(stones: &Vec<u64>) -> Vec<u64> {
     stones
         .iter()
@@ -21,24 +23,54 @@ fn blink(stones: &Vec<u64>) -> Vec<u64> {
         .collect::<Vec<u64>>()
 }
 
+fn count_single_after_blinks(
+    stone: u64,
+    blinks: u32,
+    lookup: &mut HashMap<(u64, u32), u64>,
+) -> u64 {
+    if lookup.contains_key(&(stone, blinks)) {
+        let val = lookup[&(stone, blinks)];
+        return val;
+    }
+
+    if blinks == 1 {
+        let val = blink(&vec![stone]).len();
+        lookup.insert((stone, blinks), val as u64);
+        return val as u64;
+    } else {
+        let values = blink(&vec![stone]);
+        let val: u64 = values
+            .iter()
+            .map(|&st| count_single_after_blinks(st, blinks - 1, lookup))
+            .sum();
+        lookup.insert((stone, blinks), val);
+        return val;
+    }
+}
+
 fn count_after_n_blinks(path: &str, blinks: u32) -> String {
     let contents: Vec<String> = lib::read_input(format!("input/{}", path));
     let stones: Vec<u64> = contents
         .iter()
         .flat_map(|line| line.split(" ").filter_map(|st| st.parse().ok()))
         .collect();
-    let mut final_stones = stones.clone();
 
-    for _ in 1..=blinks {
-        let new_stones = blink(&final_stones);
-        final_stones = new_stones
+    let mut lookup: HashMap<(u64, u32), u64> = HashMap::new();
+
+    let mut sum = 0;
+    for stone in stones {
+        let loop_sum = count_single_after_blinks(stone, blinks, &mut lookup);
+        sum += loop_sum;
     }
-
-    final_stones.iter().count().to_string()
+    sum.to_string()
 }
 
 pub fn part_1(path: &str) -> String {
     count_after_n_blinks(path, 25)
+}
+
+pub fn part_2(path: &str) -> String {
+    count_after_n_blinks(path, 75)
 }
 
 #[cfg(test)]
@@ -55,5 +87,11 @@ mod tests {
 
         let test_result = part_1("day11.txt");
         assert_eq!(test_result, "197157");
+    }
+
+    #[test]
+    fn test_day_11_part_2() {
+        let test_result = part_2("day11.txt");
+        assert_eq!(test_result, "234430066982597");
     }
 }
