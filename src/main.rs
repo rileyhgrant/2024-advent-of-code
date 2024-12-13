@@ -15,12 +15,13 @@ mod day09;
 mod day10;
 mod day11;
 mod day12;
+mod day13;
 
 fn main() {
     println!("\n\n===================");
     println!("Advent of Code 2024");
 
-    let current_day = 12;
+    let current_day = 13;
 
     let args: Vec<String> = env::args().collect();
     let config = parse_config(&args);
@@ -85,6 +86,9 @@ fn main() {
             "12" => {
                 lib::print_output("1", || day12::part_1("day12.txt"));
                 lib::print_output("2", || day12::part_2("day12.txt"));
+            }
+            "13" => {
+                lib::print_output("1", || day13::part_1("day13.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }
