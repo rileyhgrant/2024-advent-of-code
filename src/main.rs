@@ -94,6 +94,8 @@ fn main() {
             }
             "14" => {
                 lib::print_output("1", || day14::part_1("day14.txt"));
+                // second argument is whether or not to print the grid
+                lib::print_output("2", || day14::part_2("day14.txt", true));
             }
             _ => println!(" -- not implemented yet"),
         }
