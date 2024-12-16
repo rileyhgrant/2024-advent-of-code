@@ -17,12 +17,13 @@ mod day11;
 mod day12;
 mod day13;
 mod day14;
+mod day15;
 
 fn main() {
     println!("\n\n===================");
     println!("Advent of Code 2024");
 
-    let current_day = 14;
+    let current_day = 15;
 
     let args: Vec<String> = env::args().collect();
     let config = parse_config(&args);
@@ -94,8 +95,10 @@ fn main() {
             }
             "14" => {
                 lib::print_output("1", || day14::part_1("day14.txt"));
-                // second argument is whether or not to print the grid
-                lib::print_output("2", || day14::part_2("day14.txt", true));
+                lib::print_output("2", || day14::part_2("day14.txt", false));
+            }
+            "15" => {
+                lib::print_output("1", || day15::part_1("day15.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }

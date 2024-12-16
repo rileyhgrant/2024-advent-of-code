@@ -34,17 +34,18 @@ where
     )
 }
 
-#[allow(dead_code)]
-pub fn create_padded_grid(filepath: &str, pad_char: char, pad_amount: usize) -> Vec<Vec<char>> {
-    let contents = read_input(format!("input/{}", filepath));
-
-    let line_length = contents.iter().next().unwrap().len();
+pub fn create_padded_grid_from_vec_string(
+    vec_string: Vec<String>,
+    pad_char: char,
+    pad_amount: usize,
+) -> Vec<Vec<char>> {
+    let line_length = vec_string.iter().next().unwrap().len();
 
     let padding_row = vec![vec![pad_char; line_length + pad_amount * 2]; pad_amount];
     let padding_cols = vec![pad_char; pad_amount];
 
     let mut grid = padding_row.clone();
-    contents.iter().for_each(|line| {
+    vec_string.iter().for_each(|line| {
         let mut padded_line = padding_cols.clone();
         padded_line.extend(line.chars());
         padded_line.extend(padding_cols.clone());
@@ -56,8 +57,29 @@ pub fn create_padded_grid(filepath: &str, pad_char: char, pad_amount: usize) -> 
 }
 
 #[allow(dead_code)]
+pub fn create_padded_grid(filepath: &str, pad_char: char, pad_amount: usize) -> Vec<Vec<char>> {
+    let contents = read_input(format!("input/{}", filepath));
+    create_padded_grid_from_vec_string(contents, pad_char, pad_amount)
+}
+
+#[allow(dead_code)]
 pub fn create_grid(filepath: &str) -> Vec<Vec<char>> {
     create_padded_grid(filepath, '.', 0)
+}
+
+#[allow(dead_code)]
+pub fn print_grid(grid: &Vec<Vec<char>>, space_before: bool, space_after: bool) {
+    if space_before {
+        println!("");
+    }
+
+    grid.iter().for_each(|line| {
+        println!("{}", line.iter().collect::<String>());
+    });
+
+    if space_after {
+        println!("");
+    }
 }
 
 fn print_star_pattern(width: usize) {
