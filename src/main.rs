@@ -104,6 +104,7 @@ fn main() {
             }
             "16" => {
                 lib::print_output("1", || day16::part_1("day16.txt"));
+                lib::print_output("2", || day16::part_2("day16.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }
