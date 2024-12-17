@@ -19,6 +19,7 @@ mod day13;
 mod day14;
 mod day15;
 mod day16;
+mod day17;
 
 fn main() {
     println!("\n\n===================");
@@ -105,6 +106,9 @@ fn main() {
             "16" => {
                 lib::print_output("1", || day16::part_1("day16.txt"));
                 lib::print_output("2", || day16::part_2("day16.txt"));
+            }
+            "17" => {
+                lib::print_output("1", || day17::part_1("day17.txt"));
             }
             _ => println!(" -- not implemented yet"),
         }
