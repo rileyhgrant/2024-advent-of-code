@@ -84,11 +84,23 @@ fn bfs(
     end: (usize, usize),
     width: usize,
     height: usize,
+    least_efficient: bool,
+    max_steps: Num,
 ) -> Option<(Num, Vec<(usize, usize)>)> {
     let mut visited = HashSet::new();
     let mut came_from = HashMap::new();
 
-    let calculate_priority = |_pos: (usize, usize), steps: usize| -> Num { steps as Num };
+    let calculate_priority = |pos: (usize, usize), steps: usize| -> Num {
+        if !least_efficient {
+            return steps as Num;
+        } else {
+            // TODO: this heuristic is not helping me much, if at all
+            let dx = (end.0 as Num - pos.0 as Num).abs();
+            let dy = (end.1 as Num - pos.1 as Num).abs();
+            let manhattan = dx + dy;
+            -(manhattan * 2 + steps as Num)
+        }
+    };
 
     let mut queue = BinaryHeap::new();
     queue.push(SearchState {
@@ -101,6 +113,10 @@ fn bfs(
         position, steps, ..
     }) = queue.pop()
     {
+        if steps > max_steps {
+            continue;
+        }
+
         if !visited.insert(position) {
             continue;
         }
@@ -129,10 +145,17 @@ fn bfs(
         }
     }
 
-    panic!("No solution found");
+    None
 }
 
-fn solve_part_1(path: &str, width: usize, height: usize, n_simulations: usize) -> String {
+fn solve_part_1(
+    path: &str,
+    width: usize,
+    height: usize,
+    n_simulations: usize,
+    least_efficient: bool,
+    max_steps: Num,
+) -> Option<Num> {
     let mut grid = vec![vec!['.'; width]; height];
 
     let bytes: Vec<(usize, usize)> = lib::read_input(format!("input/{}", path))
@@ -151,17 +174,92 @@ fn solve_part_1(path: &str, width: usize, height: usize, n_simulations: usize) -
 
     let start = (0, 0);
     let end = (width - 1, height - 1);
-    let result = bfs(&grid, start, end, width, height);
-    let final_count = result.unwrap().0;
-    final_count.to_string()
+    let result = bfs(&grid, start, end, width, height, least_efficient, max_steps);
+
+    match result {
+        Some(val) => Some(val.0),
+        None => None,
+    }
 }
 
 pub fn part_1(path: &str) -> String {
     let width: usize = 71;
     let height: usize = 71;
     let n_simulations: usize = 1024;
-    let result = solve_part_1(path, width, height, n_simulations);
-    result.to_string()
+    let result = solve_part_1(path, width, height, n_simulations, false, Num::MAX);
+    result.unwrap().to_string()
+}
+
+fn solve_part_2(
+    path: &str,
+    width: usize,
+    height: usize,
+    n_initial_simulations: usize,
+    least_efficient_step_count: Num,
+) -> String {
+    let mut grid = vec![vec!['.'; width]; height];
+    let bytes: Vec<(usize, usize)> = lib::read_input(format!("input/{}", path))
+        .iter()
+        .map(|b| {
+            // The problems notion of x/y is flipped from normal convention
+            //   First num in pair is distance from left edge
+            //   Second num in pair is distance from right edge
+            let second = b.split(",").nth(0).unwrap().parse().unwrap();
+            let first = b.split(",").nth(1).unwrap().parse().unwrap();
+            return (first, second);
+        })
+        .collect();
+    simulate_falling_bytes(&mut grid, bytes.clone(), n_initial_simulations);
+
+    let start = (0, 0);
+    let end = (width - 1, height - 1);
+
+    let mut first_blocker = 0;
+    for i in n_initial_simulations..bytes.len() {
+        simulate_falling_bytes(&mut grid, vec![bytes[i]], 1);
+
+        let res = bfs(
+            &grid,
+            start,
+            end,
+            width,
+            height,
+            false,
+            least_efficient_step_count + 4,
+        );
+        match res {
+            Some(_) => continue,
+            None => {
+                first_blocker = i;
+                break;
+            }
+        }
+    }
+
+    let blocker = bytes[first_blocker];
+    let to_return = format!("{},{}", blocker.1, blocker.0);
+    to_return
+}
+
+fn part_2_helper(path: &str, width: usize, height: usize, n_initial_simulations: usize) -> String {
+    let least_efficient_step_count: Num =
+        solve_part_1(path, width, height, n_initial_simulations, true, Num::MAX).unwrap();
+
+    let result = solve_part_2(
+        path,
+        width,
+        height,
+        n_initial_simulations,
+        least_efficient_step_count,
+    );
+    result
+}
+
+pub fn part_2(path: &str) -> String {
+    let width: usize = 71;
+    let height: usize = 71;
+    let n_simulations: usize = 1024;
+    part_2_helper(path, width, height, n_simulations)
 }
 
 #[cfg(test)]
@@ -173,10 +271,29 @@ mod tests {
         let width = 7;
         let height = 7;
         let n_simulations = 12;
-        let test_result = solve_part_1("day18_test.txt", width, height, n_simulations);
-        assert_eq!(test_result, "22");
+        let test_result = solve_part_1(
+            "day18_test.txt",
+            width,
+            height,
+            n_simulations,
+            false,
+            Num::MAX,
+        );
+        assert_eq!(test_result.unwrap().to_string(), "22");
 
         let test_result = part_1("day18.txt");
         assert_eq!(test_result, "338");
+    }
+
+    #[test]
+    fn test_day_18_part_2() {
+        let width = 7;
+        let height = 7;
+        let n_simulations = 12;
+        let test_result = part_2_helper("day18_test.txt", width, height, n_simulations);
+        assert_eq!(test_result, "6,1");
+
+        let test_result = part_2("day18.txt");
+        assert_eq!(test_result, "20,44");
     }
 }
