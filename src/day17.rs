@@ -3,7 +3,7 @@ mod lib;
 
 use std::fs;
 
-type Num = i64;
+type Num = u128;
 
 fn initialize_registers(register_string: &str) -> (Num, Num, Num) {
     let registers_vec: Vec<Num> = lib::string_to_vec_string(register_string.to_string())
@@ -73,24 +73,17 @@ fn perform_operation(
 
     match opcode {
         0 => {
-            let numerator = reg_a.clone();
-            let denominator = 2_i64.pow(operand as u32);
-            let result = numerator / denominator;
-            *reg_a = result;
+            *reg_a = *reg_a >> operand;
             *idx += 2;
             return None;
         }
         1 => {
-            let first = reg_b.clone();
-            let second = operand_code;
-            let result = first ^ second;
-            *reg_b = result;
+            *reg_b = *reg_b ^ operand_code;
             *idx += 2;
             return None;
         }
         2 => {
-            let result = operand % 8;
-            *reg_b = result;
+            *reg_b = operand % 8;
             *idx += 2;
             return None;
         }
@@ -104,10 +97,7 @@ fn perform_operation(
             }
         }
         4 => {
-            let first = reg_b.clone();
-            let second = reg_c.clone();
-            let result = first ^ second;
-            *reg_b = result;
+            *reg_b = *reg_b ^ *reg_c;
             *idx += 2;
             return None;
         }
@@ -117,18 +107,12 @@ fn perform_operation(
             return Some(result);
         }
         6 => {
-            let numerator = reg_a.clone();
-            let denominator = 2_i64.pow(operand as u32);
-            let result = numerator / denominator;
-            *reg_b = result;
+            *reg_b = *reg_a >> operand;
             *idx += 2;
             return None;
         }
         7 => {
-            let numerator = reg_a.clone();
-            let denominator = 2_i64.pow(operand as u32);
-            let result = numerator / denominator;
-            *reg_c = result;
+            *reg_c = *reg_a >> operand;
             *idx += 2;
             return None;
         }
@@ -184,6 +168,65 @@ pub fn part_1(path: &str) -> String {
     result_string
 }
 
+fn solve_part_2(program: Vec<Num>) -> String {
+    let result = _recur(0, &program, 1);
+
+    result.to_string()
+}
+
+fn _recur(curr_num: Num, program: &Vec<Num>, num_to_check: usize) -> Num {
+    let total_check_len = program.iter().len();
+    let curr_check = &program[program.len() - num_to_check..];
+
+    for test_a in 0..8 {
+        let mut reg_a = curr_num + test_a;
+        let mut reg_b = 0;
+        let mut reg_c = 0;
+
+        let mut idx: Num = 0;
+        let max_idx = program.iter().len() as Num;
+
+        let mut output_vec: Vec<Num> = Vec::new();
+
+        loop {
+            if idx >= max_idx {
+                break;
+            }
+            let result = perform_operation(
+                &program, &mut idx, max_idx, &mut reg_a, &mut reg_b, &mut reg_c,
+            );
+
+            match result {
+                Some(res) => output_vec.push(res),
+                None => (),
+            }
+        }
+
+        if output_vec == curr_check {
+            if num_to_check == total_check_len {
+                return curr_num + test_a;
+            } else {
+                let new_num = (curr_num + test_a) << 3;
+                let result = _recur(new_num, program, num_to_check + 1);
+                if result != 1337 {
+                    return result;
+                }
+            }
+        }
+    }
+
+    1337
+}
+
+pub fn part_2(path: &str) -> String {
+    let contents = fs::read_to_string(format!("input/{}", path))
+        .expect("Should have been able to read the file");
+    let (_register_string, program_string) = contents.split_once("\n\n").unwrap();
+    let program = parse_program(program_string);
+    let result = solve_part_2(program);
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -195,5 +238,14 @@ mod tests {
 
         let test_result = part_1("day17.txt");
         assert_eq!(test_result, "6,7,5,2,1,3,5,1,7");
+    }
+
+    #[test]
+    fn test_day_17_part_2() {
+        let test_result = part_2("day17_test2.txt");
+        assert_eq!(test_result, "117440");
+
+        let test_result = part_2("day17.txt");
+        assert_eq!(test_result, "216549846240877");
     }
 }
