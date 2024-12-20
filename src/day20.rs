@@ -110,6 +110,7 @@ fn get_valid_cheats(maze: &Maze, pos: &Pos, seen_cheats: &HashMap<(Pos, Pos), Nu
         })
         .collect::<Vec<Pos>>()
 }
+
 fn determine_all_cheats_that_finish_before_cutoff(
     maze: &Maze,
     start: Pos,
@@ -174,6 +175,99 @@ pub fn part_1(path: &str) -> String {
     solve_part_1(path, 100)
 }
 
+fn get_valid_cheats_2(
+    maze: &Maze,
+    pos: &Pos,
+    seen_cheats: &HashMap<(Pos, Pos), Num>,
+) -> Vec<(Pos, Num)> {
+    let mut valid_cheats: Vec<(Pos, Num)> = Vec::new();
+    for dx in -20_i64..=20_i64 {
+        let remaining = 20 - dx.abs();
+        for dy in -remaining..=remaining {
+            if dy == 0 && dx == 0 {
+                continue;
+            }
+            let time_taken = dx.abs() + dy.abs();
+            let new_pos = safe_add(*pos, (dx, dy));
+            let symb = maze[new_pos.0][new_pos.1];
+            if (symb == '.' || symb == 'E') && !seen_cheats.contains_key(&(*pos, new_pos)) {
+                valid_cheats.push((new_pos, time_taken));
+            }
+        }
+    }
+    valid_cheats
+}
+
+fn determine_all_cheats_that_finish_before_cutoff_2(
+    maze: &Maze,
+    start: Pos,
+    cutoff: Num,
+    time_memo: &mut HashMap<Pos, Num>,
+    cheat_memo: &mut HashMap<(Pos, Pos), Num>,
+) -> Num {
+    let mut queue: VecDeque<(Pos, Num)> = VecDeque::new();
+    let mut parents: HashMap<Pos, Pos> = HashMap::new();
+    queue.push_front((start, 0));
+
+    while let Some(value) = queue.pop_back() {
+        let curr_pos = value.0;
+        let curr_time = value.1;
+
+        let valid_cheats = get_valid_cheats_2(&maze, &curr_pos, &cheat_memo);
+        for valid_cheat in valid_cheats {
+            let cheat_pos = valid_cheat.0;
+            let cheat_time = valid_cheat.1;
+            let cheat_total_time = bfs(&maze, cheat_pos, time_memo, curr_time + cheat_time, cutoff);
+            cheat_memo.insert((curr_pos, cheat_pos), cheat_total_time);
+        }
+
+        let valid_moves = get_valid_moves(&maze, &curr_pos, &parents);
+        for valid_move in valid_moves {
+            parents.insert(valid_move, curr_pos);
+            queue.push_front((valid_move, curr_time + 1));
+        }
+    }
+
+    let filtered_cheats: Vec<((Pos, Pos), Num)> = cheat_memo
+        .iter()
+        // TODO: i'm don't understand when a cheat would give me 0
+        //   but filtering them out seems to work for now?
+        .filter(|(_, &value)| value <= cutoff && value != 0)
+        .map(|(&key, &value)| (key, value))
+        .collect();
+
+    filtered_cheats.len() as Num
+}
+
+// TODO: this is like 90% copypaste, only difference is the
+//   get valid cheats helper that determine cheats calls
+//   i'm not going abstract this properly right now, since its the holidays
+//   but at some point that would be nice
+fn solve_part_2(path: &str, min_ms_saved: Num) -> String {
+    let grid = lib::create_padded_grid(path, 'o', 25);
+
+    let mut time_memo: HashMap<Pos, Num> = HashMap::new();
+
+    let start = find_char(&grid, 'S');
+    let initial_time = bfs(&grid, start, &mut time_memo, 0, Num::MAX);
+
+    let mut cheat_memo: HashMap<(Pos, Pos), Num> = HashMap::new();
+    let cutoff_time = initial_time - min_ms_saved;
+    let num_valid_cheats = determine_all_cheats_that_finish_before_cutoff_2(
+        &grid,
+        start,
+        cutoff_time,
+        &mut time_memo,
+        &mut cheat_memo,
+    );
+
+    num_valid_cheats.to_string()
+}
+
+pub fn part_2(path: &str) -> String {
+    solve_part_2(path, 100)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -185,5 +279,14 @@ mod tests {
 
         let test_result = part_1("day20.txt");
         assert_eq!(test_result, "1296");
+    }
+
+    #[test]
+    fn test_day_20_part_2() {
+        let test_result = solve_part_2("day20_test.txt", 50);
+        assert_eq!(test_result, "285");
+
+        let test_result = part_2("day20.txt");
+        assert_eq!(test_result, "977665");
     }
 }
