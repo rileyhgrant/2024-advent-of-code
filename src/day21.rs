@@ -5,7 +5,7 @@ type Num = i64;
 type Pos = (usize, usize);
 type Grid = Vec<Vec<char>>;
 
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 fn find_char(grid: &Grid, to_find: char) -> Pos {
     let mut found_pos = (0, 0);
@@ -22,7 +22,8 @@ fn find_char(grid: &Grid, to_find: char) -> Pos {
 }
 
 fn get_valid_moves(grid: &Grid, pos: &Pos, visited: &HashSet<Pos>) -> Vec<Pos> {
-    let deltas = vec![(0, -1), (1, 0), (0, 1), (-1, 0)];
+    // prioritize in this specific order: left, down, up, right
+    let deltas = vec![(0, -1), (1, 0), (-1, 0), (0, 1)];
 
     let width: Num = grid[0].len() as Num;
     let height: Num = grid.len() as Num;
@@ -84,7 +85,16 @@ fn count_turns(path: &[char]) -> usize {
     turns
 }
 
-fn bfs(grid: &Grid, start_char: char, end_char: char) -> Vec<char> {
+fn bfs(
+    grid: &Grid,
+    start_char: char,
+    end_char: char,
+    move_expansion_memo: &mut HashMap<(char, char), Vec<char>>,
+) -> Vec<char> {
+    if let Some(value) = move_expansion_memo.get(&(start_char, end_char)) {
+        return value.clone();
+    }
+
     let mut visited: HashSet<Pos> = HashSet::new();
     let mut queue: VecDeque<(Pos, Vec<char>)> = VecDeque::new();
     let start_pos = find_char(&grid, start_char);
@@ -116,13 +126,68 @@ fn bfs(grid: &Grid, start_char: char, end_char: char) -> Vec<char> {
         }
     }
 
-    shortest_paths
+    let shortest_path = shortest_paths
         .into_iter()
         .min_by_key(|path| count_turns(path))
-        .unwrap_or_default()
+        .unwrap_or_default();
+
+    move_expansion_memo.insert((start_char, end_char), shortest_path.clone());
+    shortest_path
 }
 
-fn solve_line(line: String, keypad: &Grid, dirpad: &Grid) -> Num {
+fn expand_n_times(
+    grid: &Grid,
+    n: Num,
+    pair: &[char],
+    move_expansion_memo: &mut HashMap<(char, char), Vec<char>>,
+    dir_expansion_memo: &mut HashMap<((char, char), Num), Num>,
+) -> (Vec<char>, Num) {
+    if let Some(value) = dir_expansion_memo.get(&((pair[0], pair[1]), n)) {
+        return (vec!['x'], *value as Num);
+    }
+
+    if n == 1 {
+        let mut result = bfs(grid, pair[0], pair[1], move_expansion_memo);
+        result.push('A');
+        let len = result.len();
+        dir_expansion_memo.insert(((pair[0], pair[1]), n), len as Num);
+        return (result, len as Num);
+    } else {
+        let mut base_path = bfs(grid, pair[0], pair[1], move_expansion_memo);
+
+        base_path.push('A');
+        base_path.insert(0, 'A');
+
+        let mut sum = 0;
+        let final_result: Vec<char> = base_path
+            .windows(2)
+            .flat_map(|curr_pair| {
+                let result = expand_n_times(
+                    grid,
+                    n - 1,
+                    curr_pair,
+                    move_expansion_memo,
+                    dir_expansion_memo,
+                );
+
+                sum += result.1;
+                result.0
+            })
+            .collect();
+
+        dir_expansion_memo.insert(((pair[0], pair[1]), n), sum);
+        return (final_result, sum);
+    }
+}
+
+fn solve_line(
+    line: String,
+    keypad: &Grid,
+    dirpad: &Grid,
+    num_dirpad_expansion: Num,
+    move_expansion_memo: &mut HashMap<(char, char), Vec<char>>,
+    dir_expansion_memo: &mut HashMap<((char, char), Num), Num>,
+) -> Num {
     let num: Num = line.clone()[0..line.len() - 1].parse().unwrap();
     let mut original_sequence: Vec<char> = line.chars().collect();
 
@@ -130,33 +195,30 @@ fn solve_line(line: String, keypad: &Grid, dirpad: &Grid) -> Num {
     let mut expanded_1: Vec<_> = original_sequence
         .windows(2)
         .flat_map(|pair| {
-            let mut path = bfs(&keypad, pair[0], pair[1]);
+            let mut path = bfs(&keypad, pair[0], pair[1], move_expansion_memo);
             path.push('A');
             return path;
         })
         .collect();
 
+    let mut sum = 0;
     expanded_1.insert(0, 'A');
-    let mut expanded_2: Vec<_> = expanded_1
+    let _: Vec<_> = expanded_1
         .windows(2)
         .flat_map(|pair| {
-            let mut path = bfs(&dirpad, pair[0], pair[1]);
-            path.push('A');
-            return path;
+            let path: (Vec<char>, Num) = expand_n_times(
+                &dirpad,
+                num_dirpad_expansion,
+                pair,
+                move_expansion_memo,
+                dir_expansion_memo,
+            );
+            sum += path.1;
+            return path.0;
         })
         .collect();
 
-    expanded_2.insert(0, 'A');
-    let expanded_3: Vec<_> = expanded_2
-        .windows(2)
-        .flat_map(|pair| {
-            let mut path = bfs(&dirpad, pair[0], pair[1]);
-            path.push('A');
-            return path;
-        })
-        .collect();
-
-    num * (expanded_3.len() as Num)
+    num * (sum as Num)
 }
 
 pub fn part_1(path: &str) -> String {
@@ -169,11 +231,54 @@ pub fn part_1(path: &str) -> String {
         vec!['.', '0', 'A'],
     ];
     let dirpad = vec![vec!['.', '^', 'A'], vec!['<', 'v', '>']];
+    let num_dirpad_expansions = 2;
+
+    let mut move_expansion_memo: HashMap<(char, char), Vec<char>> = HashMap::new();
+    let mut dir_expansion_memo: HashMap<((char, char), Num), Num> = HashMap::new();
 
     let result: Num = contents
         .iter()
         .map(|line| {
-            return solve_line(line.to_string(), &keypad, &dirpad);
+            return solve_line(
+                line.to_string(),
+                &keypad,
+                &dirpad,
+                num_dirpad_expansions,
+                &mut move_expansion_memo,
+                &mut dir_expansion_memo,
+            );
+        })
+        .sum();
+
+    result.to_string()
+}
+
+pub fn part_2(path: &str) -> String {
+    let contents = lib::read_input(format!("input/{}", path));
+
+    let keypad = vec![
+        vec!['7', '8', '9'],
+        vec!['4', '5', '6'],
+        vec!['1', '2', '3'],
+        vec!['.', '0', 'A'],
+    ];
+    let dirpad = vec![vec!['.', '^', 'A'], vec!['<', 'v', '>']];
+    let num_dirpad_expansions = 25;
+
+    let mut move_expansion_memo: HashMap<(char, char), Vec<char>> = HashMap::new();
+    let mut dir_expansion_memo: HashMap<((char, char), Num), Num> = HashMap::new();
+
+    let result: Num = contents
+        .iter()
+        .map(|line| {
+            return solve_line(
+                line.to_string(),
+                &keypad,
+                &dirpad,
+                num_dirpad_expansions,
+                &mut move_expansion_memo,
+                &mut dir_expansion_memo,
+            );
         })
         .sum();
 
@@ -191,5 +296,11 @@ mod tests {
 
         let test_result = part_1("day21.txt");
         assert_eq!(test_result, "188398");
+    }
+
+    #[test]
+    fn test_day_21_part_2() {
+        let test_result = part_2("day21.txt");
+        assert_eq!(test_result, "230049027535970");
     }
 }
