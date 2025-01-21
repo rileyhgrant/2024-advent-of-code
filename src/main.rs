@@ -30,6 +30,8 @@ mod day24;
 mod day25;
 
 fn main() {
+    let start_time = std::time::Instant::now();
+
     println!("\n\n===================");
     println!("Advent of Code 2024");
 
@@ -153,6 +155,9 @@ fn main() {
             _ => println!(" -- not implemented yet"),
         }
     }
+
+    let total_duration = start_time.elapsed();
+    println!("\nTotal time: {:.3}s", total_duration.as_secs_f64());
 
     if config.festive {
         let height = if all {
