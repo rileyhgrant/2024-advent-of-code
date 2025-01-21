@@ -191,13 +191,31 @@ pub fn part_1(path: &str) -> String {
 }
 
 fn solve_part_2(
-    path: &str,
+    _path: &str,
     width: usize,
     height: usize,
-    n_initial_simulations: usize,
-    least_efficient_step_count: Num,
-) -> String {
+    n_simulations: usize,
+    bytes: Vec<(usize, usize)>,
+) -> (&str, String) {
     let mut grid = vec![vec!['.'; width]; height];
+
+    simulate_falling_bytes(&mut grid, bytes.clone(), n_simulations);
+
+    let start = (0, 0);
+    let end = (width - 1, height - 1);
+
+    let res = bfs(&grid, start, end, width, height, false, Num::MAX);
+
+    let byte = bytes[n_simulations];
+    let byte_string = format!("{},{}", byte.1, byte.0);
+
+    match res {
+        Some(_) => return ("Clear", byte_string),
+        None => return ("Blocked", byte_string),
+    }
+}
+
+fn part_2_helper(path: &str, width: usize, height: usize, n_initial_simulations: usize) -> String {
     let bytes: Vec<(usize, usize)> = lib::read_input(format!("input/{}", path))
         .iter()
         .map(|b| {
@@ -209,50 +227,28 @@ fn solve_part_2(
             return (first, second);
         })
         .collect();
-    simulate_falling_bytes(&mut grid, bytes.clone(), n_initial_simulations);
 
-    let start = (0, 0);
-    let end = (width - 1, height - 1);
+    let mut low_idx = n_initial_simulations;
+    let mut high_idx = bytes.len();
+    let mut curr_idx = low_idx + ((high_idx - low_idx) / 2);
 
-    let mut first_blocker = 0;
-    for i in n_initial_simulations..bytes.len() {
-        simulate_falling_bytes(&mut grid, vec![bytes[i]], 1);
+    let first_blocker: String = loop {
+        let result = solve_part_2(path, width, height, curr_idx, bytes.clone());
 
-        let res = bfs(
-            &grid,
-            start,
-            end,
-            width,
-            height,
-            false,
-            least_efficient_step_count + 4,
-        );
-        match res {
-            Some(_) => continue,
-            None => {
-                first_blocker = i;
-                break;
-            }
+        if high_idx == low_idx + 1 {
+            break result.1;
         }
-    }
 
-    let blocker = bytes[first_blocker];
-    let to_return = format!("{},{}", blocker.1, blocker.0);
-    to_return
-}
+        if result.0 == "Clear" {
+            low_idx = curr_idx;
+            curr_idx = low_idx + ((high_idx - low_idx) / 2);
+        } else {
+            high_idx = curr_idx;
+            curr_idx = low_idx + ((high_idx - low_idx) / 2);
+        }
+    };
 
-fn part_2_helper(path: &str, width: usize, height: usize, n_initial_simulations: usize) -> String {
-    let least_efficient_step_count: Num =
-        solve_part_1(path, width, height, n_initial_simulations, true, Num::MAX).unwrap();
-
-    let result = solve_part_2(
-        path,
-        width,
-        height,
-        n_initial_simulations,
-        least_efficient_step_count,
-    );
-    result
+    first_blocker
 }
 
 pub fn part_2(path: &str) -> String {
